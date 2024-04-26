@@ -31,6 +31,7 @@ playerImg = pygame.image.load('player1.png')
 boardImg = pygame.image.load('board.png')
 diceImgs = [pygame.image.load(f'dice{i}.png') for i in range(1, 7)]
 fruitImg = pygame.image.load('fruit.png')
+exitImg = pygame.image.load('exit.png')
 
 """
 Player
@@ -40,7 +41,7 @@ class Player:
         self.name = name
         self.position = 0
 
-    def draw(self):
+    def draw(self, board):
         if self.position <= 99:
             # Face right if the player is on an even row
             if self.position // 10 % 2 == 0:
@@ -58,12 +59,14 @@ class Player:
             if self.position > board.end:
                 self.position = 80
             board.draw()
-            self.draw()
+            self.draw(board)
             pygame.display.flip()
             time.sleep(0.5)
 
         # Check if the player is on a raft
         if board.tiles[self.position].raft:
+            raft_sound = mixer.Sound('raft.mp3')
+            raft_sound.play()
             self.position = board.tiles[self.position].raft
         elif board.tiles[self.position].alligator:
             alligator_sound = mixer.Sound('alligator.mp3')
@@ -168,42 +171,108 @@ def gameover():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 pygame.quit()
 
-player1 = Player("Player 1")
-board = Board()
-dice = Dice()
-running = True
-rolling = False
-while running:
-    screen.fill((255, 255, 255))
+def game():
+    player1 = Player("Player 1")
+    board = Board()
+    dice = Dice()
+    running = True
+    rolling = False
+    while running:
+        screen.fill((255, 255, 255))
+        screen.blit(background, (0, 0))
+        screen.blit(exitImg, (18, 500))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
+            
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and not rolling:
+                rolling = True
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if 18 <= x <= 82 and 500 <= y <= 540:
+                    mainmenu()
+                elif 718 <= x <= 758 and 500 <= y <= 540 and not rolling:
+                    rolling = True
+
+        if rolling:
+            dice_sound = mixer.Sound('dice_roll.mp3')
+            dice_sound.play()
+            display_score(player1)
+            for _ in range(10):
+                dice.roll()
+                dice.draw()
+                board.draw()
+                player1.draw(board)
+                pygame.display.flip()
+                time.sleep(0.1)
+
+            player1.move(dice.face, board)
+            rolling = False
+
+        dice.draw()
+        board.draw()
+        player1.draw(board)
+        display_score(player1)
+        if player1.position == 99:
+            trumpet_sound = mixer.Sound('trumpet.mp3')
+            trumpet_sound.play()
+            gameover()
+
+        pygame.display.update()
+
+def mainmenu():
+    font = pygame.font.Font('freesansbold.ttf', 64)
     screen.blit(background, (0, 0))
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and not rolling:
-            rolling = True
-
-    if rolling:
-        dice_sound = mixer.Sound('dice_roll.mp3')
-        dice_sound.play()
-        for _ in range(10):
-            dice.roll()
-            dice.draw()
-            board.draw()
-            player1.draw()
-            pygame.display.flip()
-            time.sleep(0.1)
-
-        player1.move(dice.face, board)
-        rolling = False
-
-    dice.draw()
-    board.draw()
-    player1.draw()
-    display_score(player1)
-    if player1.position == 99:
-        gameover()
-
+    # Create the text
+    main_text = font.render("Rafts and Alligators", True, (255, 255, 255))
+    # Center the text
+    text_rect = main_text.get_rect(center=(400, 200))
+    screen.blit(main_text, text_rect)
+    # Buttons for Start and Exit
+    pygame.draw.rect(screen, (255, 255, 255), (300, 350, 200, 50), 2)
+    pygame.draw.rect(screen, (255, 255, 255), (300, 450, 200, 50), 2)
+    # Create the text for the buttons
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    start_text = font.render("Start", True, (255, 255, 255))
+    exit_text = font.render("Exit", True, (255, 255, 255))
+    # Center the text
+    text_rect = start_text.get_rect(center=(400, 375))
+    screen.blit(start_text, text_rect)
+    text_rect = exit_text.get_rect(center=(400, 475))
+    screen.blit(exit_text, text_rect)
     pygame.display.update()
-    
+    # Add credits
+    font = pygame.font.Font('freesansbold.ttf', 12)
+    developer_text = font.render("Developed by Maracoo", True, (255, 255, 255))
+    screen.blit(developer_text, (10, 560))
+    credit_text = font.render("Art and music belong to their respective owners.", True, (255, 255, 255))
+    screen.blit(credit_text, (10, 580))
+    # Press any key to start
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if 300 <= x <= 500 and 350 <= y <= 400:
+                    game()
+                if 300 <= x <= 500 and 450 <= y <= 500:
+                    pygame.quit()
+                    exit()
+        
+            # Check for hover effect
+            mouse_pos = pygame.mouse.get_pos()
+            if 300 <= mouse_pos[0] <= 500 and 350 <= mouse_pos[1] <= 400:
+                pygame.draw.rect(screen, (200, 200, 200), (300, 350, 200, 50), 2)
+            elif 300 <= mouse_pos[0] <= 500 and 450 <= mouse_pos[1] <= 500:
+                pygame.draw.rect(screen, (200, 200, 200), (300, 450, 200, 50), 2)
+            else:
+                pygame.draw.rect(screen, (255, 255, 255), (300, 350, 200, 50), 2)
+                pygame.draw.rect(screen, (255, 255, 255), (300, 450, 200, 50), 2)
+        
+        pygame.display.update()
+
+# Start the game
+mainmenu()
