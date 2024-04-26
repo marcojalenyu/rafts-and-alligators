@@ -1,9 +1,17 @@
 # Rafts and Alligators
-
  A rainforest-themed Snakes and Ladders game with the player as a capybara using Pygame.
+#
+
+## How to Run
+1. Download/Clone the repository.
+2. Make sure you have Pygame installed
+3. Run main.py
 
 ## Previews
-
+![Title Screen](assets/previews/titlescreen.png)
+![Starting Gameplay](assets/previews/gameplay1.png)
+![Gameplay](assets/previews/gameplay2.png)
+##
 
 ## Special Thanks
 - Art: @palau19832, @jedsada-naeprai, @ameliasinta27, @irasutoya, @sketchifyedu
