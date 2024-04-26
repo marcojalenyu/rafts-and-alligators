@@ -15,21 +15,21 @@ pygame.init()
 screen = pygame.display.set_mode((800, 600))
 # Set the title and icon
 pygame.display.set_caption("Rafts and Alligators")
-icon = pygame.image.load('icon.png')
+icon = pygame.image.load('assets/img/icon.png')
 pygame.display.set_icon(icon)
 
 # Background (Credits to tahbikat: https://www.deviantart.com/tahbikat/art/Swamp-Background-440292485)
-background = pygame.image.load('background.png')
+background = pygame.image.load('assets/img/background.png')
 
 """
 Drawing the images
 """
-player1Img = pygame.image.load('player1.png')
-player2Img = pygame.image.load('player2.png')
-boardImg = pygame.image.load('board.png')
-diceImgs = [pygame.image.load(f'dice{i}.png') for i in range(1, 7)]
-fruitImg = pygame.image.load('fruit.png')
-exitImg = pygame.image.load('exit.png')
+player1Img = pygame.image.load('assets/img/player1.png')
+player2Img = pygame.image.load('assets/img/player2.png')
+boardImg = pygame.image.load('assets/img/board.png')
+diceImgs = [pygame.image.load(f'assets/img/dices/dice{i}.png') for i in range(1, 7)]
+fruitImg = pygame.image.load('assets/img/fruit.png')
+exitImg = pygame.image.load('assets/img/exit.png')
 
 """
 Player
@@ -55,7 +55,7 @@ class Player:
     def move(self, steps, board, player2):
         # Move the player (with animation)
         for _ in range(steps):
-            footstep_sound = mixer.Sound('footstep.mp3')
+            footstep_sound = mixer.Sound('assets/audio/footstep.mp3')
             footstep_sound.play()
             self.position += 1
             if self.position > board.end:
@@ -68,11 +68,11 @@ class Player:
 
         # Check if the player is on a raft
         if board.tiles[self.position].raft:
-            raft_sound = mixer.Sound('raft.mp3')
+            raft_sound = mixer.Sound('assets/audio/raft.mp3')
             raft_sound.play()
             self.position = board.tiles[self.position].raft
         elif board.tiles[self.position].alligator:
-            alligator_sound = mixer.Sound('alligator.mp3')
+            alligator_sound = mixer.Sound('assets/audio/alligator.mp3')
             alligator_sound.play()
             self.position = board.tiles[self.position].alligator
 
@@ -173,10 +173,10 @@ def gameover(player):
     screen.blit(exitImg, (18, 500))
     pygame.display.update()
     # Play winning sound
-    trumpet_sound = mixer.Sound('trumpet.mp3')
+    trumpet_sound = mixer.Sound('assets/audio/trumpet.mp3')
     trumpet_sound.play()
     # Play winning sound
-    mixer.music.load('win.mp3')
+    mixer.music.load('assets/audio/win.mp3')
     mixer.music.play(-1)
     # Press any key to exit
     while True:
@@ -207,12 +207,12 @@ def game():
                 x, y = event.pos
                 if 18 <= x <= 82 and 500 <= y <= 564:
                     mainmenu()
-                elif 718 <= x <= 758 and 500 <= y <= 564 and not rolling:
+                elif 718 <= x <= 782 and 500 <= y <= 564 and not rolling:
                     rolling = True
 
         if rolling:
             # Player 1
-            dice_sound = mixer.Sound('dice_roll.mp3')
+            dice_sound = mixer.Sound('assets/audio/dice_roll.mp3')
             dice_sound.play()
             display_score(player1, player2)
             for _ in range(10):
@@ -253,7 +253,7 @@ def game():
 
 def mainmenu():
     # Background Music
-    mixer.music.load('background.mp3')
+    mixer.music.load('assets/audio/background.mp3')
     mixer.music.play(-1)
     font = pygame.font.Font('freesansbold.ttf', 64)
     screen.blit(background, (0, 0))
