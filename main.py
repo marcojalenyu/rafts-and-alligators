@@ -20,14 +20,12 @@ pygame.display.set_icon(icon)
 
 # Background (Credits to tahbikat: https://www.deviantart.com/tahbikat/art/Swamp-Background-440292485)
 background = pygame.image.load('background.png')
-# Background Music
-mixer.music.load('background.mp3')
-mixer.music.play(-1)
 
 """
 Drawing the images
 """
-playerImg = pygame.image.load('player1.png')
+player1Img = pygame.image.load('player1.png')
+player2Img = pygame.image.load('player2.png')
 boardImg = pygame.image.load('board.png')
 diceImgs = [pygame.image.load(f'dice{i}.png') for i in range(1, 7)]
 fruitImg = pygame.image.load('fruit.png')
@@ -37,11 +35,15 @@ exitImg = pygame.image.load('exit.png')
 Player
 """
 class Player:
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, number):
+        self.number = number
         self.position = 0
 
     def draw(self, board):
+        if self.number == 1:
+            playerImg = player1Img
+        else:
+            playerImg = player2Img
         if self.position <= 99:
             # Face right if the player is on an even row
             if self.position // 10 % 2 == 0:
@@ -50,7 +52,7 @@ class Player:
             else:
                 screen.blit(pygame.transform.flip(playerImg, True, False), (730-board.tiles[self.position].x, board.tiles[self.position].y+7.5))
 
-    def move(self, steps, board):
+    def move(self, steps, board, player2):
         # Move the player (with animation)
         for _ in range(steps):
             footstep_sound = mixer.Sound('footstep.mp3')
@@ -60,6 +62,7 @@ class Player:
                 self.position = 80
             board.draw()
             self.draw(board)
+            player2.draw(board)
             pygame.display.flip()
             time.sleep(0.5)
 
@@ -142,24 +145,36 @@ class Dice:
 """
 Game Loop
 """
-def display_score(player):
+def display_score(player, player2):
     font = pygame.font.Font('freesansbold.ttf', 16)
-    text = font.render(f"Player: {player.position+1}", True, (255, 255, 255))
+    text = font.render(f"You: {player.position+1}", True, (255, 255, 255))
     screen.blit(text, (10, 10))
+    text = font.render(f"Opp: {player2.position+1}", True, (255, 255, 255))
+    screen.blit(text, (10, 30))
 
-def gameover():
+def checkWinner(player1, player2):
+    if player1.position == 99:
+        gameover(player1.number)
+    elif player2.position == 99:
+        gameover(player2.number)
+
+def gameover(player):
     font = pygame.font.Font('freesansbold.ttf', 64)
     subfont = pygame.font.Font('freesansbold.ttf', 32)
     screen.blit(background, (0, 0))
     # Create the text
     main_text = font.render("Game Over", True, (255, 255, 255))
-    sub_text = subfont.render("Press Space to exit", True, (255, 255, 255))
+    sub_text = subfont.render(f"Player {player} won", True, (255, 255, 255))
     # Center the text
     text_rect = main_text.get_rect(center=(400, 250))
     screen.blit(main_text, text_rect)
     text_rect = sub_text.get_rect(center=(400, 350))
     screen.blit(sub_text, text_rect)
+    screen.blit(exitImg, (18, 500))
     pygame.display.update()
+    # Play winning sound
+    trumpet_sound = mixer.Sound('trumpet.mp3')
+    trumpet_sound.play()
     # Play winning sound
     mixer.music.load('win.mp3')
     mixer.music.play(-1)
@@ -168,11 +183,14 @@ def gameover():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if 18 <= x <= 82 and 500 <= y <= 564:
+                    mainmenu()
 
 def game():
-    player1 = Player("Player 1")
+    player1 = Player(1)
+    player2 = Player(2)
     board = Board()
     dice = Dice()
     running = True
@@ -185,44 +203,58 @@ def game():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit()
-            
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and not rolling:
-                rolling = True
-
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                if 18 <= x <= 82 and 500 <= y <= 540:
+                if 18 <= x <= 82 and 500 <= y <= 564:
                     mainmenu()
-                elif 718 <= x <= 758 and 500 <= y <= 540 and not rolling:
+                elif 718 <= x <= 758 and 500 <= y <= 564 and not rolling:
                     rolling = True
 
         if rolling:
+            # Player 1
             dice_sound = mixer.Sound('dice_roll.mp3')
             dice_sound.play()
-            display_score(player1)
+            display_score(player1, player2)
             for _ in range(10):
                 dice.roll()
                 dice.draw()
                 board.draw()
                 player1.draw(board)
+                player2.draw(board)
                 pygame.display.flip()
                 time.sleep(0.1)
 
-            player1.move(dice.face, board)
-            rolling = False
+            player1.move(dice.face, board, player2)
+            checkWinner(player1, player2)
+            time.sleep(0.1)
+
+            # Player 2
+            dice_sound.play()
+            for _ in range(10):
+                dice.roll()
+                dice.draw()
+                board.draw()
+                player1.draw(board)
+                player2.draw(board)
+                pygame.display.flip()
+                time.sleep(0.1)
+
+            player2.move(dice.face, board, player1)
+            checkWinner(player1, player2)
+            rolling = False      
 
         dice.draw()
         board.draw()
         player1.draw(board)
-        display_score(player1)
-        if player1.position == 99:
-            trumpet_sound = mixer.Sound('trumpet.mp3')
-            trumpet_sound.play()
-            gameover()
+        player2.draw(board)
+        display_score(player1, player2)
 
         pygame.display.update()
 
 def mainmenu():
+    # Background Music
+    mixer.music.load('background.mp3')
+    mixer.music.play(-1)
     font = pygame.font.Font('freesansbold.ttf', 64)
     screen.blit(background, (0, 0))
     # Create the text
