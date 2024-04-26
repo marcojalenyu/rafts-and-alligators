@@ -3,7 +3,11 @@
 #
 
 ## How to Run
-1. Download/Clone the repository.
+Option 1
+1. Download/Clone the assets folder and executable
+2. Run "Rafts and Alligators" in the same folder as the downloaded assets folder
+Option 2
+1. Download/Clone the repository
 2. Make sure you have Pygame installed
 3. Run main.py
 
