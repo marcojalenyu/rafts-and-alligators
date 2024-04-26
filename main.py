@@ -7,6 +7,7 @@ import pygame
 from pygame import mixer
 import random
 import time
+import sys
 
 # Initialize Pygame
 pygame.init()
@@ -182,7 +183,7 @@ def gameover(player):
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+                sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if 18 <= x <= 82 and 500 <= y <= 564:
@@ -202,7 +203,7 @@ def game():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                exit()
+                sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if 18 <= x <= 82 and 500 <= y <= 564:
@@ -285,14 +286,13 @@ def mainmenu():
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+                sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if 300 <= x <= 500 and 350 <= y <= 400:
                     game()
                 if 300 <= x <= 500 and 450 <= y <= 500:
-                    pygame.quit()
-                    exit()
+                    sys.exit()
         
             # Check for hover effect
             mouse_pos = pygame.mouse.get_pos()
